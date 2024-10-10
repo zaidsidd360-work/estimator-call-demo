@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { Loader, Phone } from "lucide-react";
+import parsePhoneNumber from "libphonenumber-js";
+import { toast } from "react-toastify";
 
 const agents = [
 	{
@@ -59,7 +61,16 @@ function App() {
 	const [isCalling, setIsCalling] = useState(false);
 
 	const handleCallAgent = async () => {
-		setIsCalling(true); // Set the calling state to true
+		if (formValues.name === "" || formValues.phone === "") {
+			toast.error("Please provide your phone number and name");
+			return;
+		}
+		if (!parsePhoneNumber(formValues.phone)?.isValid()) {
+			toast.error("Please provide a valid phone number");
+			return;
+		}
+
+		setIsCalling(true);
 
 		const options = {
 			method: "POST",
@@ -76,7 +87,7 @@ function App() {
 					},
 				},
 				customer: {
-					number: formValues.phone,
+					number: parsePhoneNumber(formValues.phone)?.number,
 					name: formValues.name,
 				},
 				assistantId: selectedAgent.agentId,
@@ -85,7 +96,7 @@ function App() {
 		};
 
 		try {
-			fetch("https://api.vapi.ai/call", options)
+			await fetch("https://api.vapi.ai/call", options)
 				.then((response) => response.json())
 				.then((response) => console.log(response))
 				.catch((err) => console.error(err));
@@ -116,6 +127,8 @@ function App() {
 		console.log(formValues);
 	}, [formValues]);
 
+	console.log(parsePhoneNumber(formValues.phone)?.number);
+
 	return (
 		<div className="flex items-center justify-center h-screen w-full">
 			<div className="w-[90vw] h-screen">
@@ -145,14 +158,15 @@ function App() {
 
 						<div className="pb-8">
 							<label className="text-xl" htmlFor="phone">
-								Phone Number
+								Phone Number (with country code*)
 							</label>
 							<input
+								required
 								className="w-full border border-gray-200 h-10 pl-2 active:outline-none active:border-2"
 								type="phone"
 								id="phone"
 								name="phone"
-								placeholder="ex: +11234567890"
+								placeholder="ex: +1 123 456 7890"
 								onChange={handleChange}
 							/>
 						</div>
@@ -162,6 +176,7 @@ function App() {
 								Name
 							</label>
 							<input
+								required
 								className="w-full border border-gray-200 h-10 pl-2 active:outline-none active:border-2"
 								type="text"
 								id="name"
