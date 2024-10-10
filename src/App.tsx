@@ -98,7 +98,11 @@ function App() {
 		try {
 			await fetch("https://api.vapi.ai/call", options)
 				.then((response) => response.json())
-				.then((response) => console.log(response))
+				.then(() =>
+					toast.success(
+						`Call initiated. You should be receiving a call from ${selectedAgent.name} shortly!`
+					)
+				)
 				.catch((err) => console.error(err));
 			console.log(`Calling ${selectedAgent.name}...`);
 		} catch (error) {
