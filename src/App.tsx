@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import PillInput from "./components/PillInput";
+import { Loader, Phone } from "lucide-react";
 
 const agents = [
 	{
-		agentId: "AG001",
-		name: "Clark",
+		agentId: "0a7c9b72-b4e2-4036-aaa0-02757032f6b9",
+		name: "Lucy",
 		imgUrl: "https://cdn.prod.website-files.com/64ada0f2685b2d18caa5e699/66dfb1e00c4a573703fde325_Firefly%20a%20agent%20who%20is%20calling%20in%20the%20call%20office%2Cthe%20office%20has%20a%20high%20celling%2011683-p-800.jpg",
-		type: "Receptionist",
+		type: "Inbound QA",
 		bgBlobColors: {
 			"bg-blob-a": "#fffb00", // Bright Yellow
 			"bg-blob-b": "#daff33", // Light Yellow-Green
@@ -15,10 +15,10 @@ const agents = [
 		},
 	},
 	{
-		agentId: "AG002",
-		name: "Jane",
+		agentId: "a427db91-4195-44d6-8737-842a098ffcc7",
+		name: "Alex",
 		imgUrl: "https://cdn.prod.website-files.com/64ada0f2685b2d18caa5e699/66d7ab4f7cf6461383ff4842_Firefly%20a%20customer%20service%20agent%20is%20working%20in%20a%20call%20center%2038667.jpg",
-		type: "Customer service",
+		type: "Customer Support",
 		bgBlobColors: {
 			"bg-blob-a": "#00ffd1", // Aqua
 			"bg-blob-b": "#33ffe0", // Light Turquoise
@@ -26,10 +26,10 @@ const agents = [
 		},
 	},
 	{
-		agentId: "AG003",
-		name: "Michelle",
+		agentId: "9a4f42a6-6e74-4d0b-9687-8bf9926b126f",
+		name: "Maria",
 		imgUrl: "https://cdn.prod.website-files.com/64ada0f2685b2d18caa5e699/66d7a2feade3d854233990ea_Firefly%20a%20real%20estate%20agent%20is%20calling%20people%20to%20set%20appointments%2072036.jpg",
-		type: "Appointment booking",
+		type: "Appointment Setter",
 		bgBlobColors: {
 			"bg-blob-a": "#ffb347", // Soft Orange
 			"bg-blob-b": "#ffcc80", // Peach
@@ -56,16 +56,65 @@ function App() {
 		phone: "",
 	});
 
-	const setBgColors = (colors: { [x: string]: string | null }) => {
-		const root = document.documentElement; // Targets the :root (html)
-		Object.keys(colors).forEach((key) => {
-			root.style.setProperty(`--${key}`, colors[key]);
-		});
+	const [isCalling, setIsCalling] = useState(false);
+
+	const handleCallAgent = async () => {
+		setIsCalling(true); // Set the calling state to true
+
+		const options = {
+			method: "POST",
+			headers: {
+				Authorization: "Bearer 120d7b8c-a153-4d2f-99a1-6fde5ce680bf",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				assistantOverrides: {
+					variableValues: {
+						name: formValues.name,
+						phone: formValues.phone,
+						email: formValues.email,
+					},
+				},
+				customer: {
+					number: formValues.phone,
+					name: formValues.name,
+				},
+				assistantId: selectedAgent.agentId,
+				phoneNumberId: "a185ba6c-aca5-4eae-9320-caf6966d52df",
+			}),
+		};
+
+		try {
+			fetch("https://api.vapi.ai/call", options)
+				.then((response) => response.json())
+				.then((response) => console.log(response))
+				.catch((err) => console.error(err));
+			console.log(`Calling ${selectedAgent.name}...`);
+		} catch (error) {
+			console.error("Failed to call the agent", error);
+		} finally {
+			setIsCalling(false); // Reset the calling state
+		}
+	};
+
+	// const setBgColors = (colors: { [x: string]: string | null }) => {
+	// 	const root = document.documentElement; // Targets the :root (html)
+	// 	Object.keys(colors).forEach((key) => {
+	// 		root.style.setProperty(`--${key}`, colors[key]);
+	// 	});
+	// };
+
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+		setFormValues((prevValues) => ({
+			...prevValues,
+			[name]: value,
+		}));
 	};
 
 	useEffect(() => {
-		setBgColors(selectedAgent.bgBlobColors);
-	}, [selectedAgent]);
+		console.log(formValues);
+	}, [formValues]);
 
 	return (
 		<div className="flex items-center justify-center h-screen w-full">
@@ -89,61 +138,79 @@ function App() {
 					</div>
 				</div>
 				<div className="rounded-xl h-min overflow-hidden border border-gray-300">
-					<form className="h-full px-2 py-2 space-y-3 relative">
-						<h1 className="text-[2rem] mb-8">
+					<form className="h-full flex flex-col px-2 py-2 space-y-3 relative">
+						<h1 className="text-[2rem] mb-5">
 							Receive a live call from our agent
 						</h1>
 
 						<div className="pb-8">
-							<label className=" text-xl" htmlFor="phone">
+							<label className="text-xl" htmlFor="phone">
 								Phone Number
 							</label>
 							<input
 								className="w-full border border-gray-200 h-10 pl-2 active:outline-none active:border-2"
 								type="phone"
 								id="phone"
+								name="phone"
+								placeholder="ex: +11234567890"
+								onChange={handleChange}
 							/>
 						</div>
+
 						<div className="pb-8">
-							<label className=" text-xl" htmlFor="name">
+							<label className="text-xl" htmlFor="name">
 								Name
 							</label>
 							<input
 								className="w-full border border-gray-200 h-10 pl-2 active:outline-none active:border-2"
 								type="text"
 								id="name"
+								name="name"
+								placeholder="ex: John Doe"
+								onChange={handleChange}
 							/>
 						</div>
+
 						<div className="pb-8">
-							<label className=" text-xl" htmlFor="email">
+							<label className="text-xl" htmlFor="email">
 								Email
 							</label>
 							<input
 								className="w-full border border-gray-200 h-10 pl-2 active:outline-none active:border-2"
 								type="mail"
 								id="email"
+								name="email"
+								placeholder="ex: jdoe@example.com"
+								onChange={handleChange}
 							/>
 						</div>
-						<div className="bg-black text-white rounded-md grid place-items-center p-3 mt-auto">
-							Call {selectedAgent.name}
+
+						{/* This div takes up the remaining space to push the button to the bottom */}
+						<div className="flex-grow"></div>
+
+						<div
+							className={`bg-black text-white rounded-md grid place-items-center p-3 cursor-pointer ${
+								isCalling ? "opacity-50 cursor-not-allowed" : ""
+							}`}
+							onClick={isCalling ? undefined : handleCallAgent}
+							aria-disabled={isCalling}
+						>
+							{isCalling ? (
+								<div className="flex items-center gap-2">
+									<span>Calling {selectedAgent.name}...</span>
+									<Loader
+										size={20}
+										className="animate-spin mr-2"
+									/>
+								</div>
+							) : (
+								<div className="flex items-center gap-2">
+									<span>Call {selectedAgent.name}</span>
+									<Phone size={20} className="mr-2" />
+								</div>
+							)}
 						</div>
 					</form>
-					{/* <img
-						className="h-full max-w-1/2 w-1/2"
-						src={selectedAgent.imgUrl}
-						alt={selectedAgent.name}
-					/> */}
-					{/* <div className="container">
-						<div className="absolute font-bold text-[4rem] left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2">
-							Scallio AI
-							<p>{selectedAgent.name}</p>
-						</div>
-						<div className="blobs">
-							<div className="blob a">a</div>
-							<div className="blob b">b</div>
-							<div className="blob c">c</div>
-						</div>
-					</div> */}
 				</div>
 			</div>
 		</div>
