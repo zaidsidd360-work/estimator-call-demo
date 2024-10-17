@@ -38,6 +38,17 @@ const agents = [
 			"bg-blob-c": "#ffe0b2", // Light Cream
 		},
 	},
+	{
+		agentId: "d4df9c7a-b9b2-461f-a984-ea9fd2497b59",
+		name: "Fatima",
+		imgUrl: "https://cdn.prod.website-files.com/64ada0f2685b2d18caa5e699/66d7a2feade3d854233990ea_Firefly%20a%20real%20estate%20agent%20is%20calling%20people%20to%20set%20appointments%2072036.jpg",
+		type: "Appointment Setter (Arabic)",
+		bgBlobColors: {
+			"bg-blob-a": "#ffb347", // Soft Orange
+			"bg-blob-b": "#ffcc80", // Peach
+			"bg-blob-c": "#ffe0b2", // Light Cream
+		},
+	},
 ];
 
 function App() {
